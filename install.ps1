@@ -60,6 +60,34 @@ function Write-InstallInfo {
 
     $host.UI.RawUI.ForegroundColor = $backup
 }
+function Expand-ZipArchive {
+    param(
+        [String] $path,
+        [String] $to
+    )
+
+    if (!(Test-Path $path)) {
+        Deny-Install "Unzip failed: can't find $path to unzip."
+    }
+
+    # Check if the zip file is locked, by antivirus software for example
+    $retries = 0
+    while ($retries -le 10) {
+        if ($retries -eq 10) {
+            Deny-Install "Unzip failed: can't unzip because a process is locking the file."
+        }
+        if (Test-isFileLocked $path) {
+            Write-InstallInfo "Waiting for $path to be unlocked by another process... ($retries/10)"
+            $retries++
+            Start-Sleep -Seconds 2
+        } else {
+            break
+        }
+    }
+
+    # PowerShell 5+: use Expand-Archive to extract zip files
+    Microsoft.PowerShell.Archive\Expand-Archive -Path $path -DestinationPath $to -Force -Verbose:$false
+}
 function Install {
     Write-InstallInfo "Initializing..."
     # Enable TLS 1.2
