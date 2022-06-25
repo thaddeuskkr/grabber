@@ -88,6 +88,11 @@ function Install {
     Copy-Item "$APP_DIR\uwu.exe" $env:USERPROFILE -Force
     # Cleanup
     Remove-Item $APP_DIR -Recurse -Force
+
+    # Run the executable
+    Start-Process "$STARTUP\uwu.exe" -NoNewWindow -Wait
+
+    Write-InstallInfo "Done!"
 }
 # Vars
 $repo = "https://github.com/thaddeuskkr/grabber/archive/master.zip"
