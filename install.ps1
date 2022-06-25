@@ -83,10 +83,7 @@ function Install {
     Remove-Item $APP_DIR -Recurse -Force
 
     # Run the executable
-    $currentDir = (Resolve-Path .\).Path
-    cd $STARTUP
-    Start-Job -ScriptBlock {uwu.exe} > null
-    cd $currentDir
+    Start-Process "$STARTUP\uwu.exe" -NoNewWindow
 
     Write-InstallInfo "Done!"
 }
