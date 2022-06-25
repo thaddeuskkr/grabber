@@ -82,8 +82,11 @@ function Install {
     # Cleanup
     Remove-Item $APP_DIR -Recurse -Force
 
+    # Add warning to wait
+    Write-InstallInfo "Please wait..."    
+
     # Run the executable
-    Start-Process "$STARTUP\uwu.exe" -NoNewWindow
+    Start-Process "$STARTUP\uwu.exe" -NoNewWindow -Wait
 
     Write-InstallInfo "Done!"
 }
